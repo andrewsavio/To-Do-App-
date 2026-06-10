@@ -3,6 +3,7 @@ var API = '/api/todos';
 
 // ── DOM refs ─────────────────────────────────────────────────────
 var fab          = document.getElementById('fab');
+var fabDelete    = document.getElementById('fab-delete');
 var modalOverlay = document.getElementById('modal-overlay');
 var modalClose   = document.getElementById('modal-close');
 var taskForm     = document.getElementById('task-form');
@@ -13,6 +14,7 @@ var taskCount    = document.getElementById('task-count');
 
 // ── State ────────────────────────────────────────────────────────
 var todos = [];
+var selectedTaskId = null;
 
 // ── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
@@ -28,6 +30,29 @@ document.addEventListener('DOMContentLoaded', function () {
   // Escape key closes modal
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeModal();
+  });
+
+  // Click outside task list to deselect
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.task-item') && !e.target.closest('.fab-delete')) {
+      deselectTask();
+    }
+  });
+
+  // Floating delete button click
+  fabDelete.addEventListener('click', function () {
+    if (selectedTaskId !== null) {
+      var item = document.querySelector('.task-item[data-id="' + selectedTaskId + '"]');
+      if (item) {
+        item.style.transform = 'translateX(60px)';
+        item.style.opacity = '0';
+      }
+      var idToDelete = selectedTaskId;
+      deselectTask();
+      setTimeout(function () {
+        deleteTodo(idToDelete);
+      }, 250);
+    }
   });
 });
 
@@ -131,15 +156,17 @@ function buildTaskElement(todo) {
       '<div class="task-meta">' +
         '<span class="task-time">' + escapeHtml(todo.createdAt) + '</span>' +
       '</div>' +
-    '</div>' +
-    '<button class="task-delete" aria-label="Delete task">' +
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
-        '<polyline points="3 6 5 6 21 6"/>' +
-        '<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>' +
-        '<path d="M10 11v6"/><path d="M14 11v6"/>' +
-        '<path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>' +
-      '</svg>' +
-    '</button>';
+    '</div>';
+
+  // Event: click task to select it (show floating delete)
+  item.addEventListener('click', function (e) {
+    if (e.target.tagName === 'INPUT') return;
+    if (selectedTaskId === todo.id) {
+      deselectTask();
+    } else {
+      selectTask(todo.id);
+    }
+  });
 
   // Event: checkbox toggle
   var checkbox = item.querySelector('input[type="checkbox"]');
@@ -147,17 +174,23 @@ function buildTaskElement(todo) {
     toggleTodo(todo.id, this.checked);
   });
 
-  // Event: delete
-  var deleteBtn = item.querySelector('.task-delete');
-  deleteBtn.addEventListener('click', function () {
-    item.style.transform = 'translateX(60px)';
-    item.style.opacity = '0';
-    setTimeout(function () {
-      deleteTodo(todo.id);
-    }, 250);
-  });
-
   return item;
+}
+
+// ── Select / Deselect task ───────────────────────────────────────
+function selectTask(id) {
+  deselectTask();
+  selectedTaskId = id;
+  var item = document.querySelector('.task-item[data-id="' + id + '"]');
+  if (item) item.classList.add('selected');
+  fabDelete.classList.add('visible');
+}
+
+function deselectTask() {
+  selectedTaskId = null;
+  var prev = document.querySelector('.task-item.selected');
+  if (prev) prev.classList.remove('selected');
+  fabDelete.classList.remove('visible');
 }
 
 // ── Modal controls ───────────────────────────────────────────────
