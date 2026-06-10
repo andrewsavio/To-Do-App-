@@ -21,14 +21,14 @@ public class TodoApp {
     static class Todo {
         long id;
         String text;
-        String priority;   // "low" | "medium" | "high"
+        String description;
         boolean completed;
         String createdAt;
 
-        Todo(String text, String priority) {
+        Todo(String text, String description) {
             this.id = idCounter.getAndIncrement();
             this.text = text;
-            this.priority = priority;
+            this.description = description;
             this.completed = false;
             this.createdAt = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("MMM d, h:mm a"));
@@ -36,8 +36,8 @@ public class TodoApp {
 
         String toJson() {
             return String.format(
-                "{\"id\":%d,\"text\":\"%s\",\"priority\":\"%s\",\"completed\":%b,\"createdAt\":\"%s\"}",
-                id, escapeJson(text), escapeJson(priority), completed, escapeJson(createdAt)
+                "{\"id\":%d,\"text\":\"%s\",\"description\":\"%s\",\"completed\":%b,\"createdAt\":\"%s\"}",
+                id, escapeJson(text), escapeJson(description), completed, escapeJson(createdAt)
             );
         }
 
@@ -136,17 +136,17 @@ public class TodoApp {
         private void handlePost(HttpExchange exchange) throws IOException {
             String body = readBody(exchange);
             String text = extractJsonValue(body, "text");
-            String priority = extractJsonValue(body, "priority");
+            String description = extractJsonValue(body, "description");
 
             if (text == null || text.trim().isEmpty()) {
                 sendError(exchange, 400, "Task text is required");
                 return;
             }
-            if (priority == null || priority.isEmpty()) {
-                priority = "low";
+            if (description == null) {
+                description = "";
             }
 
-            Todo todo = new Todo(text.trim(), priority);
+            Todo todo = new Todo(text.trim(), description.trim());
             todos.add(todo);
             sendJson(exchange, 201, todo.toJson());
         }

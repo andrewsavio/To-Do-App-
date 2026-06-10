@@ -75,22 +75,9 @@
           <input type="text" id="task-input" class="task-input" placeholder="What needs to be done?" autocomplete="off" required />
           <div class="input-glow"></div>
         </div>
-        <div class="priority-group">
-          <span class="priority-label">Priority</span>
-          <div class="priority-options">
-            <label class="priority-option">
-              <input type="radio" name="priority" value="low" checked />
-              <span class="priority-chip low">Low</span>
-            </label>
-            <label class="priority-option">
-              <input type="radio" name="priority" value="medium" />
-              <span class="priority-chip medium">Medium</span>
-            </label>
-            <label class="priority-option">
-              <input type="radio" name="priority" value="high" />
-              <span class="priority-chip high">High</span>
-            </label>
-          </div>
+        <div class="input-group">
+          <textarea id="task-desc" class="task-desc" placeholder="Add a description (optional)" rows="3"></textarea>
+          <div class="input-glow"></div>
         </div>
         <button type="submit" id="task-submit" class="task-submit">
           <span>Add Task</span>

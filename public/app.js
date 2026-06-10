@@ -45,7 +45,7 @@ function fetchTodos() {
 }
 
 // ── Create a new todo ────────────────────────────────────────────
-function createTodo(text, priority) {
+function createTodo(text, description) {
   var xhr = new XMLHttpRequest();
   xhr.open('POST', API, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
@@ -56,7 +56,7 @@ function createTodo(text, priority) {
       render();
     }
   };
-  xhr.send(JSON.stringify({ text: text, priority: priority }));
+  xhr.send(JSON.stringify({ text: text, description: description }));
 }
 
 // ── Toggle todo completed ────────────────────────────────────────
@@ -127,8 +127,8 @@ function buildTaskElement(todo) {
     '</label>' +
     '<div class="task-content">' +
       '<p class="task-text">' + escapeHtml(todo.text) + '</p>' +
+      (todo.description ? '<p class="task-description">' + escapeHtml(todo.description) + '</p>' : '') +
       '<div class="task-meta">' +
-        '<span class="task-priority-badge ' + todo.priority + '">' + todo.priority + '</span>' +
         '<span class="task-time">' + escapeHtml(todo.createdAt) + '</span>' +
       '</div>' +
     '</div>' +
@@ -180,10 +180,10 @@ function handleSubmit(e) {
   var text = taskInput.value.trim();
   if (!text) return;
 
-  var priorityEl = document.querySelector('input[name="priority"]:checked');
-  var priority = priorityEl ? priorityEl.value : 'low';
+  var descEl = document.getElementById('task-desc');
+  var description = descEl ? descEl.value.trim() : '';
 
-  createTodo(text, priority);
+  createTodo(text, description);
   closeModal();
 }
 
