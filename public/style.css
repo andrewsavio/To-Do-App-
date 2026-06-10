@@ -239,6 +239,17 @@ body {
   background: rgba(124, 92, 252, 0.08);
 }
 
+.sort-arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: transform var(--transition-smooth);
+}
+
+.sort-arrow.desc {
+  transform: rotate(180deg);
+}
+
+
 /* ===== Empty State ===== */
 .empty-state {
   display: flex;

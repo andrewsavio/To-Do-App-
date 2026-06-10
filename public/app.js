@@ -18,6 +18,7 @@ var sortDropdown = document.getElementById('sort-dropdown');
 var todos = [];
 var selectedTaskId = null;
 var currentSort = 'date'; // 'date' or 'name'
+var sortDirection = 'desc'; // 'asc' or 'desc'
 
 // ── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
@@ -46,20 +47,24 @@ document.addEventListener('DOMContentLoaded', function () {
   var sortOptions = document.querySelectorAll('.sort-option');
   for (var i = 0; i < sortOptions.length; i++) {
     sortOptions[i].addEventListener('click', function () {
-      currentSort = this.getAttribute('data-sort');
-      // Update active state
-      for (var j = 0; j < sortOptions.length; j++) {
-        sortOptions[j].classList.remove('active');
+      var clickedSort = this.getAttribute('data-sort');
+      if (clickedSort === currentSort) {
+        // Same option clicked — toggle direction
+        sortDirection = (sortDirection === 'asc') ? 'desc' : 'asc';
+      } else {
+        // Different option — start ascending
+        currentSort = clickedSort;
+        sortDirection = 'asc';
       }
-      this.classList.add('active');
+      updateSortUI(sortOptions);
       sortDropdown.classList.remove('open');
       sortBtn.classList.remove('active');
       render();
     });
   }
 
-  // Mark default sort option as active
-  document.querySelector('.sort-option[data-sort="date"]').classList.add('active');
+  // Set initial sort UI
+  updateSortUI(sortOptions);
 
   // Close dropdown when clicking outside
   document.addEventListener('click', function (e) {
@@ -168,13 +173,14 @@ function render() {
 
     // Sort a copy of the array
     var sorted = todos.slice();
+    var dir = (sortDirection === 'asc') ? 1 : -1;
     if (currentSort === 'name') {
       sorted.sort(function (a, b) {
-        return a.text.toLowerCase().localeCompare(b.text.toLowerCase());
+        return dir * a.text.toLowerCase().localeCompare(b.text.toLowerCase());
       });
     } else {
       sorted.sort(function (a, b) {
-        return b.timestamp - a.timestamp;
+        return dir * (a.timestamp - b.timestamp);
       });
     }
 
@@ -241,6 +247,51 @@ function deselectTask() {
   if (prev) prev.classList.remove('selected');
   fabDelete.classList.remove('visible');
 }
+
+// ── Update Sort Option UI ─────────────────────────────────────────
+function updateSortUI(sortOptions) {
+  for (var i = 0; i < sortOptions.length; i++) {
+    var option = sortOptions[i];
+    var isCurrent = option.getAttribute('data-sort') === currentSort;
+    
+    // Remove existing arrow if any
+    var existingArrow = option.querySelector('.sort-arrow');
+    if (existingArrow) {
+      existingArrow.remove();
+    }
+    
+    if (isCurrent) {
+      option.classList.add('active');
+      // Create and append the arrow SVG
+      var arrowSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      arrowSvg.setAttribute('class', 'sort-arrow' + (sortDirection === 'desc' ? ' desc' : ''));
+      arrowSvg.setAttribute('width', '10');
+      arrowSvg.setAttribute('height', '10');
+      arrowSvg.setAttribute('viewBox', '0 0 24 24');
+      arrowSvg.setAttribute('fill', 'none');
+      arrowSvg.setAttribute('stroke', 'currentColor');
+      arrowSvg.setAttribute('stroke-width', '3');
+      arrowSvg.setAttribute('stroke-linecap', 'round');
+      arrowSvg.setAttribute('stroke-linejoin', 'round');
+      
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', '12');
+      line.setAttribute('y1', '19');
+      line.setAttribute('x2', '12');
+      line.setAttribute('y2', '5');
+      
+      var polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      polyline.setAttribute('points', '5 12 12 5 19 12');
+      
+      arrowSvg.appendChild(line);
+      arrowSvg.appendChild(polyline);
+      option.appendChild(arrowSvg);
+    } else {
+      option.classList.remove('active');
+    }
+  }
+}
+
 
 // ── Modal controls ───────────────────────────────────────────────
 function openModal() {
