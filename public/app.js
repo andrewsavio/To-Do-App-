@@ -11,10 +11,13 @@ var taskInput    = document.getElementById('task-input');
 var taskList     = document.getElementById('task-list');
 var emptyState   = document.getElementById('empty-state');
 var taskCount    = document.getElementById('task-count');
+var sortBtn      = document.getElementById('sort-btn');
+var sortDropdown = document.getElementById('sort-dropdown');
 
 // ── State ────────────────────────────────────────────────────────
 var todos = [];
 var selectedTaskId = null;
+var currentSort = 'date'; // 'date' or 'name'
 
 // ── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
@@ -30,6 +33,40 @@ document.addEventListener('DOMContentLoaded', function () {
   // Escape key closes modal
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeModal();
+  });
+
+  // Sort button toggle
+  sortBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    sortDropdown.classList.toggle('open');
+    sortBtn.classList.toggle('active');
+  });
+
+  // Sort options
+  var sortOptions = document.querySelectorAll('.sort-option');
+  for (var i = 0; i < sortOptions.length; i++) {
+    sortOptions[i].addEventListener('click', function () {
+      currentSort = this.getAttribute('data-sort');
+      // Update active state
+      for (var j = 0; j < sortOptions.length; j++) {
+        sortOptions[j].classList.remove('active');
+      }
+      this.classList.add('active');
+      sortDropdown.classList.remove('open');
+      sortBtn.classList.remove('active');
+      render();
+    });
+  }
+
+  // Mark default sort option as active
+  document.querySelector('.sort-option[data-sort="date"]').classList.add('active');
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.sort-wrapper')) {
+      sortDropdown.classList.remove('open');
+      sortBtn.classList.remove('active');
+    }
   });
 
   // Click outside task list to deselect
@@ -129,8 +166,20 @@ function render() {
     var pending = todos.filter(function (t) { return !t.completed; }).length;
     taskCount.textContent = pending + ' pending';
 
-    for (var i = 0; i < todos.length; i++) {
-      taskList.appendChild(buildTaskElement(todos[i]));
+    // Sort a copy of the array
+    var sorted = todos.slice();
+    if (currentSort === 'name') {
+      sorted.sort(function (a, b) {
+        return a.text.toLowerCase().localeCompare(b.text.toLowerCase());
+      });
+    } else {
+      sorted.sort(function (a, b) {
+        return b.timestamp - a.timestamp;
+      });
+    }
+
+    for (var i = 0; i < sorted.length; i++) {
+      taskList.appendChild(buildTaskElement(sorted[i]));
     }
   }
 }

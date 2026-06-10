@@ -24,20 +24,22 @@ public class TodoApp {
         String description;
         boolean completed;
         String createdAt;
+        long timestamp;
 
         Todo(String text, String description) {
             this.id = idCounter.getAndIncrement();
             this.text = text;
             this.description = description;
             this.completed = false;
+            this.timestamp = System.currentTimeMillis();
             this.createdAt = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("MMM d, h:mm a"));
         }
 
         String toJson() {
             return String.format(
-                "{\"id\":%d,\"text\":\"%s\",\"description\":\"%s\",\"completed\":%b,\"createdAt\":\"%s\"}",
-                id, escapeJson(text), escapeJson(description), completed, escapeJson(createdAt)
+                "{\"id\":%d,\"text\":\"%s\",\"description\":\"%s\",\"completed\":%b,\"createdAt\":\"%s\",\"timestamp\":%d}",
+                id, escapeJson(text), escapeJson(description), completed, escapeJson(createdAt), timestamp
             );
         }
 
